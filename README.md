@@ -1,21 +1,21 @@
 # Intelligent Task Manager
 
-**Introduction**
+# Introduction
 
 The Intelligent Task Manager is an advanced Python-based tool designed to provide a comprehensive suite of functionalities for monitoring, analyzing, and securing system processes and network activity. Aimed at enhancing system performance, security, and privacy, this project incorporates a range of powerful modules that allow users to track process hierarchies, monitor network traffic, scan files for potential threats, and manage audio-visual device access. Through its integration with tools like MetaDefender for file scanning and advanced threat detection methods for network security, it serves as a multifaceted solution for users, developers, and IT administrators who seek robust control and insight into their system's behavior. This project offers a detailed and efficient way to handle tasks ranging from basic process monitoring to sophisticated network threat analysis and device control
 
-**1)Process and Network Monitoring**
+# 1)Process and Network Monitoring
 
 This project provides a Python script to log detailed process and network connection information, including privileges, I/O details, and runtime. The collected data is saved as a CSV file on the desktop for further analysis.
 
-**Features**
+## Features
 
 *   Logs process details such as PID, name, CPU/memory usage, privileges, and parent process info.
 *   Tracks network connections associated with each process, including IP addresses, ports, and status.
 *   Monitors active processes and logs their start and end times.
 *   Outputs data in a CSV file format for easy analysis.
 
-**Requirements**
+## Requirements
 
 1.  **Operating System**: Windows
 2.  **Python**: Version 3.6 or later
@@ -23,13 +23,13 @@ This project provides a Python script to log detailed process and network connec
     *   psutil
     *   wmi
 
-**Installation**
+## Installation
 
 1.  Install the required Python libraries:
 
 pip install psutil wmi
 
-**Running the Script**
+## Running the Script
 
 1.  Open the script file process\_network\_logger.py in your preferred text editor.
 2.  Adjust the duration of monitoring (in minutes) if needed by modifying the argument in start\_background\_task().
@@ -37,9 +37,9 @@ pip install psutil wmi
 
 python 1process\_and\_network\_monitoring.py
 
-1.  The collected data will be saved as a CSV file named full\_process\_network\_info151111.csv on your desktop.
+1.  The collected data will be saved as a CSV file named full\_process\_network\_info.csv on your desktop.
 
-**How It Works**
+## How It Works
 
 1.  **Privilege Detection**:
     *   Uses Windows APIs to query process privileges.
@@ -52,7 +52,7 @@ python 1process\_and\_network\_monitoring.py
 4.  **Output**:
     *   Saves detailed logs in a CSV file for review.
 
-**CSV File Structure**
+## CSV File Structure
 
 The output CSV file contains the following columns:
 
@@ -78,7 +78,7 @@ The output CSV file contains the following columns:
 *   source\_port: Source port for network connections
 *   destination\_port\_number: Destination port for network connections
 
-**Notes**
+## Notes
 
 1.  **Admin Privileges**:
     *   Running the script as an administrator is recommended for complete process access.
@@ -91,7 +91,7 @@ The output CSV file contains the following columns:
 
 This project provides a Python script to monitor and manage process chains, track process hierarchies, and take specific actions when certain processes are detected. It can also terminate child processes that exceed a specified threshold.
 
-**Features**
+## Features
 
 *   Monitors processes continuously and detects specific processes by name.
 *   Tracks the entire process hierarchy (parent-child relationships).
@@ -99,20 +99,20 @@ This project provides a Python script to monitor and manage process chains, trac
 *   Automatically terminates child processes that exceed a specified threshold of subprocesses.
 *   Displays the process tree structure for visualization.
 
-**Requirements**
+## Requirements
 
 1.  **Operating System**: Windows
 2.  **Python**: Version 3.12.5
 3.  **Required Libraries**:
     *   psutil
 
-**Installation**
+## Installation
 
 1.Install the required Python library:
 
 pip install psutil
 
-**Running the Script**
+## Running the Script
 
 1.  Open the script file process\_chain\_tracker.py in your preferred text editor.
 2.  Add the process names and associated actions in the script. For example:
@@ -128,7 +128,7 @@ python process\_chain\_tracker.py
 1.  The script will run in the background, monitoring processes and building a process tree.
 2.  To stop the script, press Ctrl+C. The tracked process tree will be displayed upon termination.
 
-**How It Works**
+## How It Works
 
 1.  **Process Monitoring**:
     *   Continuously scans active processes for those matching names in the chain.
@@ -141,7 +141,7 @@ python process\_chain\_tracker.py
 5.  **Tree Visualization**:
     *   Displays the tracked process tree with indentation for better visualization.
 
-**Example Output**
+## Example Output
 
 When a process is detected and its tree is tracked, the output might look like this:
 
@@ -155,7 +155,7 @@ Process 'ChildProcess1.exe' (PID: 5678)
 
 Process 'GrandChildProcess.exe' (PID: 91011)
 
-**Notes**
+## Notes
 
 1.  **Threshold Management**:
     *   Adjust the threshold parameter in terminate\_excessive\_children to set the maximum allowed number of child processes.
@@ -164,7 +164,7 @@ Process 'GrandChildProcess.exe' (PID: 91011)
 3.  **Performance**:
     *   Monitoring processes continuously may cause slight performance overhead.
 
-**Customization**
+## Customization
 
 1.  **Adding New Actions**:
     *   Define a function to handle the detected process:
@@ -306,7 +306,7 @@ The scan\_history.json file will store a dictionary with the format:
 *   **MetaDefender Cloud API**: For providing the scanning service.
 *   **Python Community**: For helpful libraries like psutil and requests.
 
-**5)IP Threat Analysis**
+# 5)IP Threat Analysis
 
 This Python-based system captures network packets in real-time, extracts source and destination IPs, and analyzes them using multiple threat detection methods, including:
 
@@ -316,7 +316,7 @@ This Python-based system captures network packets in real-time, extracts source 
 
 Results are logged into a CSV file for future reference, making this tool highly efficient for network monitoring and malicious IP detection.
 
-**Features**
+## Features
 
 *   **Real-Time Packet Capture**: Monitors live network traffic to extract IPs.
 *   **Threat Analysis Methods**:
@@ -328,7 +328,7 @@ Results are logged into a CSV file for future reference, making this tool highly
 *   **User-Controlled Execution**: Allows the user to stop the program anytime by pressing the S key.
 *   **Time-Bound Execution**: The system stops automatically after running for one minute unless the user stops it earlier.
 
-**Prerequisites**
+## Prerequisites
 
 *   Python 3.12.5
 *   Required Python libraries:
@@ -338,7 +338,7 @@ Results are logged into a CSV file for future reference, making this tool highly
     *   msvcrt (Windows-specific) for detecting key presses
 *   Administrative privileges (to enable packet capture using Scapy)
 
-**Setup**
+## Setup
 
 1.  Install required dependencies:
 
@@ -351,7 +351,7 @@ ip\_threat\_analysis.ipynb
 
 1.  Enter the desired name for the CSV output file when prompted.
 
-**How It Works**
+## How It Works
 
 1.  **Blocklist Initialization**:  
     Downloads blocklists from multiple sources and stores them in a Bloom Filter for efficient lookup.
@@ -368,7 +368,7 @@ ip\_threat\_analysis.ipynb
     *   Press S to stop the program manually.
     *   The program automatically halts after one minute of execution.
 
-**CSV File Format**
+## CSV File Format
 
 The results are logged into a CSV file with the following columns:
 
@@ -383,31 +383,31 @@ Example:
 | --- | --- | --- | --- |
 | 8.8.8.8 | Malicious | {"Bloom Filter": "Clean", } | Sat Dec 24 2024 12:00:00 |
 
-**Customizing the Script**
+## Customizing the Script
 
 *   **Blocklist Sources**: Add or remove blocklist URLs in the blocklist\_urls list.
 *   **Execution Time**: Adjust the runtime by modifying the start\_time check in the main function.
 *   **Reputation Check**: Update the malicious\_ips list in the check\_ip\_reputation function.
 
-**Known Limitations**
+## Known Limitations
 
 *   The program currently uses a hardcoded reputation list for some checks, which may not reflect all real-world scenarios.
 *   Requires administrative privileges to capture packets using Scapy.
 *   The Google Safe Browsing API integration requires a valid API key and may have rate limits.
 
-**Future Improvements**
+## Future Improvements
 
 *   Integrate additional APIs for IP reputation analysis.
 *   Add cross-platform support for key-press detection.
 *   Enhance the blocklist parsing for different formats.
 
-**7)Active Window Input Tracker**
+# 7)Active Window Input Tracker
 
-**Overview**
+## Overview
 
 The Active Window Input Tracker is a Python-based tool that tracks and stores user keyboard inputs for each active window separately. This program allows you to monitor typing activity on multiple windows simultaneously and organizes the inputs by the window titles.
 
-**Features**
+## Features
 
 *   Tracks keyboard inputs in real-time for all active windows.
 *   Organizes and stores inputs based on the title of the active window.
@@ -415,14 +415,14 @@ The Active Window Input Tracker is a Python-based tool that tracks and stores us
 *   Provides a user-friendly way to monitor and update text for each window.
 *   Allows the program to be terminated gracefully by pressing the F1 key.
 
-**Prerequisites**
+## Prerequisites
 
 *   Python 3.12.5
 *   Required Python libraries:
     *   keyboard: For capturing global keyboard events.
     *   pygetwindow: For detecting the active window.
 
-**Setup**
+## Setup
 
 1.  Install the required dependencies:
 
@@ -432,7 +432,7 @@ pip install keyboard pygetwindow
 
 keylogger.ipynb
 
-**How It Works**
+## How It Works
 
 1.  **Key Event Listener**:
     *   The script listens to global key presses using the keyboard library.
@@ -445,13 +445,13 @@ keylogger.ipynb
 4.  **Program Termination**:
     *   Press F1 to gracefully stop the program.
 
-**Usage**
+## Usage
 
 1.  Start the program, and type in different windows (e.g., browsers, text editors, terminal).
 2.  The script will track and print inputs for each active window separately in the console.
 3.  To stop the program, press the F1 key.
 
-**Sample Output**
+## Sample Output
 
 While running, the console might display:
 
@@ -463,7 +463,7 @@ Current Input in 'Google Chrome': Searching for Active Window Tracker
 
 Current Input in 'Terminal': python example.py
 
-**Customizing the Code**
+## Customizing the Code
 
 *   **Special Key Handling**:
     *   Modify how specific keys (e.g., Enter, Tab) are handled in the on\_key\_event function.
@@ -472,21 +472,21 @@ Current Input in 'Terminal': python example.py
 *   **Input Processing**:
     *   Extend the code to save inputs to a file or database for further analysis.
 
-**Known Limitations**
+## Known Limitations
 
 *   The pygetwindow library might not detect active windows correctly on certain operating systems or configurations.
 *   The program currently does not support non-character keys like Shift, Ctrl, or Alt.
 
-**Future Improvements**
+## Future Improvements
 
 *   Add support for non-character keys.
 *   Implement cross-platform compatibility for window detection.
 *   Save input logs to a file for later review.
 *   Create a GUI to display inputs for each window dynamically.
 
-**8)Microphone and Camera Control and Monitoring Tool**
+# 8)Microphone and Camera Control and Monitoring Tool
 
-**Overview**
+## Overview
 
 The Microphone and Camera Control and Monitoring Tool is designed to provide users with robust system-level control over their microphone and camera functionalities while offering real-time monitoring capabilities. Aimed at privacy-conscious individuals, developers, and IT administrators, this tool addresses the need for easy management of audio and video devices to mitigate unauthorized access risks. With an intuitive GUI and efficient backend processing, the tool empowers users to seamlessly manage device access and monitor applications utilizing the microphone.
 
@@ -660,6 +660,6 @@ The application combines Python libraries and PowerShell commands for effective 
 *   **Control Actions**: Instantaneous (less than 1 second per operation).
 *   **Monitoring Refresh Interval**: 5 seconds.
 
-## Conclusion
+# Conclusion
 
 The **Intelligent Task Manager** proves to be a versatile and essential tool for improving system security, monitoring, and privacy. By providing an all-in-one platform for process and network monitoring, file scanning, and device access control, it equips users with the tools necessary to effectively manage system operations and mitigate security risks. Whether it's tracking process chains, detecting malicious IPs, or ensuring privacy with microphone and camera controls, the project empowers users to maintain a secure and efficient digital environment. With its comprehensive capabilities, the Intelligent Task Manager offers not only real-time protection but also a proactive approach to system management, making it an invaluable asset for both personal and professional use.
