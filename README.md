@@ -150,10 +150,10 @@ Process 'Code.exe' (PID: 1234) detected. Tracking its chain.
 Process Tree:
 
 Process 'Code.exe' (PID: 1234)
-
-   Process 'ChildProcess1.exe' (PID: 5678)
-   
-      Process 'GrandChildProcess.exe' (PID: 91011)
+    
+    Process 'ChildProcess1.exe' (PID: 5678)
+        
+        Process 'GrandChildProcess.exe' (PID: 91011)
 
 ## Notes
 
