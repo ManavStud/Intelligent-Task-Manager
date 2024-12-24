@@ -146,14 +146,10 @@ python process\_chain\_tracker.py
 When a process is detected and its tree is tracked, the output might look like this:
 
 Process 'Code.exe' (PID: 1234) detected. Tracking its chain.
-
 Process Tree:
-
 Process 'Code.exe' (PID: 1234)
-
-Process 'ChildProcess1.exe' (PID: 5678)
-
-Process 'GrandChildProcess.exe' (PID: 91011)
+   Process 'ChildProcess1.exe' (PID: 5678)
+      Process 'GrandChildProcess.exe' (PID: 91011)
 
 ## Notes
 
@@ -175,7 +171,183 @@ Process 'GrandChildProcess.exe' (PID: 91011)
 2.  **Tree Visualization**:
     *   Use process\_chain.display\_process\_tree() to view the tracked process hierarchy.
 
-# 3)MetaDefender File Scanner
+# 3)Microphone and Camera Control and Monitoring Tool
+
+## Overview
+
+The Microphone and Camera Control and Monitoring Tool is designed to provide users with robust system-level control over their microphone and camera functionalities while offering real-time monitoring capabilities. Aimed at privacy-conscious individuals, developers, and IT administrators, this tool addresses the need for easy management of audio and video devices to mitigate unauthorized access risks. With an intuitive GUI and efficient backend processing, the tool empowers users to seamlessly manage device access and monitor applications utilizing the microphone.
+
+## Features
+
+*   **Microphone Control**: This feature leverages PowerShell scripts to modify registry keys that determine system-level microphone access. By directly updating the registry values for CapabilityAccessManager and applying related policies, users can ensure that unauthorized access is blocked or allowed based on their preference. This is crucial for safeguarding sensitive conversations from potential eavesdropping.  
+    
+*   **Camera Control**: Similar to the microphone control, this feature uses PowerShell scripts to adjust the registry settings for camera access. By toggling the registry values under the ConsentStore key, users can effectively enable or disable their camera, preventing malicious software or unauthorized apps from activating the camera without consent.  
+    
+*   **Combined Control**: This option combines the microphone and camera control scripts to allow users to toggle access for both devices simultaneously. It provides a convenient one-click solution for locking down audio and video inputs during sensitive tasks or meetings.  
+    
+*   **Real-time Monitoring**: Utilizing the pycaw library, this feature scans the audio sessions managed by the Windows Audio Service to identify active microphone usage. The psutil library is used to fetch detailed process information for each detected session, allowing users to pinpoint which applications are currently accessing the microphone. This feature is critical for real-time privacy assurance and intrusion detection.  
+    
+*   **Reset to Defaults**: This functionality restores the microphone and camera settings to their original states by removing custom registry keys and policies applied by the tool. It ensures that users can revert changes effortlessly without requiring manual intervention in the system settings.  
+    
+*   **User-Friendly GUI**: Built with Tkinter, the GUI presents users with a visually clear and straightforward interface. Buttons are color-coded to indicate actions (e.g., red for disabling, green for enabling), and a status label provides real-time feedback on operations.  
+    
+*   **Dynamic Updates**: The monitoring feature dynamically updates every 5 seconds to ensure users have the latest information about microphone usage. This ensures that any unauthorized access is detected promptly, enhancing the overall reliability and effectiveness of the tool.  
+    
+*   **Microphone Control**: Enable or disable system-level access to the microphone.  
+    
+*   **Camera Control**: Enable or disable system-level access to the camera.  
+    
+*   **Combined Control**: Simultaneously enable or disable both microphone and camera.  
+    
+*   **Real-time Monitoring**: Detect and display applications currently accessing the microphone.  
+    
+*   **Reset to Defaults**: Restore microphone and camera settings to their default state.  
+    
+*   **User-Friendly GUI**: A simple graphical interface for ease of use.  
+    
+*   **Dynamic Updates**: Refresh microphone usage data every 5 seconds.  
+    
+
+## Requirements
+
+1.  **Python Version**: Python 3.8 or later.
+2.  **Libraries**:
+    *   tkinter (for GUI development)
+    *   ctypes (for requesting admin privileges)
+    *   subprocess (for running PowerShell commands)
+    *   psutil (for process monitoring)
+    *   pycaw (for audio session management)
+3.  **Operating System**: Windows 10 or later.
+4.  **Privileges**: Admin privileges are required for modifying system settings.
+
+## Installation
+
+1.  Ensure Python 3.8+ is installed on your system. You can verify the installed version by running the following command in your terminal or command prompt:
+
+python --version
+
+Install the required libraries using pip:  
+pip install psutil pycaw
+
+1.  Save the script to a file, e.g., mic\_cam\_control.py.
+
+## How It Works
+
+This tool was developed to address the increasing concerns surrounding unauthorized access to audio and video devices in modern computing environments. By providing a comprehensive suite of features, the tool empowers users to regain control over their privacy and ensures transparency in device usage.
+
+From a technical perspective, the tool leverages registry modifications through PowerShell to enforce system-level restrictions on microphone and camera access. This ensures that the changes are robust and not easily overridden by standard application-level permissions. Real-time monitoring further enhances the tool's utility by identifying and displaying active microphone usage, making it an essential solution for detecting potential intrusions.
+
+The primary motivation behind this development is to create a proactive defense mechanism for individuals and organizations against malicious software or unauthorized applications that exploit microphone and camera capabilities. With increasing reliance on video conferencing and virtual communication, ensuring the security of audio and video input devices has become paramount. This tool not only simplifies managing these aspects but also fosters awareness about potential vulnerabilities in digital systems.
+
+1.  The script starts by checking for admin privileges using the ctypes library.
+2.  It uses PowerShell commands executed via the subprocess library to modify Windows registry settings for microphone and camera access.
+3.  The real-time monitoring feature uses the pycaw library to detect active audio sessions and psutil to fetch process details.
+4.  A Tkinter GUI provides buttons for interacting with these features, and a status label displays the results of user actions.
+
+## Output
+
+The Graphical User Interface (GUI) for the Microphone and Camera Control and Monitoring Tool is designed for maximum usability and clarity. Built using the Tkinter library, the GUI integrates intuitive design principles to ensure that users of all technical levels can easily interact with the tool. Below are detailed aspects of the GUI layout and functionality:
+
+### GUI Layout
+
+1.  **Main Window**:  
+    *   The main window is cleanly divided into distinct sections for microphone controls, camera controls, combined actions, and monitoring. Each section is visually separated with labels to enhance user navigation.
+    *   Buttons are color-coded (green for enabling actions, red for disabling actions) to provide visual cues.
+2.  **Control Buttons**:  
+    *   Each button corresponds to a specific action, such as enabling or disabling the microphone and camera, or resetting all settings to their default state.
+    *   The button text is concise, clearly indicating its functionality (e.g., "Enable Microphone").
+3.  **Status Label**:  
+    *   Located at the bottom of the window, the status label dynamically updates with feedback messages based on user interactions. Messages include "Microphone Disabled Successfully" or "Monitoring Active," ensuring the user is always informed of the system’s state.
+4.  **Real-time Monitoring Panel**:  
+    *   A dedicated section of the GUI displays a scrolling list of applications currently using the microphone. This panel refreshes every 5 seconds, ensuring the user receives up-to-date information.
+5.  **Reset Defaults Button**:  
+    *   A prominently placed button allows users to quickly revert all settings to their original states, offering a safety net for users who might inadvertently modify settings.
+
+### Usability Features
+
+*   **Admin Privileges Check**: Before launching the main GUI, the script verifies admin rights. If not detected, a pop-up alerts the user, ensuring critical features requiring elevated permissions are accessible.
+*   **Error Handling**: If an operation fails (e.g., due to a service issue), the GUI displays a clear error message in the status label.
+*   **Responsive Design**: The Tkinter framework ensures the GUI adapts to different screen resolutions, maintaining usability across devices.
+
+### User Interaction Workflow
+
+1.  Upon launching the application, the GUI presents all control options in an organized format.
+2.  Users can click the relevant button (e.g., "Disable Camera") to perform the desired action. A status message confirms the success or failure of the operation.
+3.  The monitoring panel automatically updates every 5 seconds, showing any active microphone usage. Users can use this information to identify unauthorized access.
+4.  If users wish to reset changes, the "Reset Defaults" button provides an instant revert option, ensuring easy recovery.
+
+### Technical Benefits of the GUI
+
+*   **Streamlined Accessibility**: The GUI removes the need for manual PowerShell commands, providing non-technical users access to advanced system controls.
+*   **Dynamic Feedback Loop**: Real-time updates and status messages ensure that users are always aware of the system state, reducing confusion.
+*   **Integrated Monitoring**: The combination of control buttons and monitoring data in a single interface offers comprehensive device management from one location.
+
+This GUI has been thoughtfully designed to combine functionality, clarity, and ease of use, making it a robust tool for managing and monitoring microphone and camera access.
+
+*   **Control Actions**: A status message indicating success or failure for each operation.
+*   **Real-time Monitoring**: A list of applications actively using the microphone, refreshed every 5 seconds.
+
+## Notes
+
+*   Changes to microphone and camera access persist until manually reverted or reset using the tool.
+*   Some operations may require restarting services like Audiosrv to apply changes.
+
+## Setup
+
+1.  Open a terminal or command prompt with admin privileges.
+2.  Navigate to the directory containing the script.
+3.  Ensure all dependencies are installed as per the **Requirements** section.
+
+## How to Run
+
+Launch the script with admin privileges:  
+python mic\_cam\_control.py
+
+1.  Interact with the GUI to control microphone and camera settings or monitor usage.
+
+## Implementation Details
+
+The application combines Python libraries and PowerShell commands for effective system control:
+
+*   **PowerShell Integration**: Used for registry modifications to enable or disable microphone and camera.
+*   **Pycaw Integration**: Fetches active audio sessions to identify applications accessing the microphone.
+*   **Tkinter GUI**: Provides an intuitive interface for users to interact with the tool.
+
+## Functions
+
+1.  **is\_admin()**: Checks if the script is running with admin privileges.
+2.  **run\_powershell\_script(script)**: Executes a PowerShell script and captures the output.
+3.  **disable\_microphone\_access()**: Disables microphone access via registry changes.
+4.  **enable\_microphone\_access()**: Enables microphone access via registry changes.
+5.  **disable\_camera\_access()**: Disables camera access via registry changes.
+6.  **enable\_camera\_access()**: Enables camera access via registry changes.
+7.  **disable\_both()**: Disables both microphone and camera access.
+8.  **enable\_both()**: Enables both microphone and camera access.
+9.  **reset\_defaults()**: Restores microphone and camera settings to their defaults.
+10.  **get\_mic\_usage()**: Detects applications currently using the microphone.
+11.  **update\_status(action, result)**: Updates the status label in the GUI.
+
+## Troubleshooting
+
+1.  **Admin Privileges Required**: Ensure the script is run with admin rights.
+2.  **Missing Dependencies**: Install required libraries using pip.
+3.  **Registry Access Denied**: Verify that the current user account has sufficient permissions.
+4.  **Monitoring Issues**: Ensure pycaw and psutil are correctly installed.
+5.  **Service Restart Issues**: Restart the Windows Audio service manually if necessary.
+
+## Acknowledgments
+
+*   **Pycaw Library**: For audio session management.
+*   **Psutil Library**: For process monitoring.
+*   **Tkinter**: For GUI development.
+*   **Microsoft PowerShell**: For enabling registry-based system control.
+
+## Execution Time
+
+*   **Control Actions**: Instantaneous (less than 1 second per operation).
+*   **Monitoring Refresh Interval**: 5 seconds.
+
+# 4)MetaDefender File Scanner
 
 This project scans running executable files on your system using the MetaDefender Cloud API and retrieves their scan reports. It ensures that files are only scanned once by maintaining a history of previously scanned files.
 
@@ -401,6 +573,94 @@ Example:
 *   Add cross-platform support for key-press detection.
 *   Enhance the blocklist parsing for different formats.
 
+# 6)USB and Audio Device Monitor
+
+## Overview
+
+The **USB and Audio Device Monitor** is a Python-based script that utilizes the WMI (Windows Management Instrumentation) library to track and display connected USB devices and audio devices. This program provides a simple and efficient way to monitor system peripherals.
+
+## Features
+
+*   Lists all connected USB devices.
+*   Lists all audio devices available on the system.
+*   Leverages the WMI library for system-level hardware monitoring.
+*   Lightweight and easy to run on any Windows system.
+
+## Prerequisites
+
+*   **Operating System**: Windows (as WMI is Windows-specific).
+*   **Python Version**: Python 3.12.5 or later.
+*   **Required Python Library**:
+
+*   wmi: For accessing and querying Windows Management Instrumentation.
+
+To install the WMI library, use:
+
+pip install wmi
+
+## Setup
+
+1.  **Install Python**: Ensure Python is installed and configured on your system.
+2.  **Install Dependencies**: Run the following command to install the required library:
+3.  pip install wmi
+4.  **Run the Script**: Save the script as device\_monitor.py and execute it using:
+5.  python device\_monitor.py
+
+## How It Works
+
+1.  **USB Device Monitoring**:
+
+*   Queries the Win32\_USBControllerDevice class via WMI.
+*   Iterates through all USB devices and prints their names.
+
+3.  **Audio Device Monitoring**:
+
+*   Queries the Win32\_SoundDevice class via WMI.
+*   Fetches and prints the name of each detected audio device.
+
+5.  **Execution**:
+
+*   When run, the script displays a list of USB devices and audio devices directly in the console.
+
+## Usage
+
+1.  **Monitor USB Devices**: Run the script to list all USB devices connected to your system.
+2.  **Monitor Audio Devices**: The script will also list all audio devices detected on your system.
+
+## Sample Output
+
+When executed, the script might output:
+
+USB Devices:
+
+USB Device: Generic USB Hub
+
+USB Device: USB Composite Device
+
+Audio Devices:
+
+Audio Device: Realtek High Definition Audio
+
+Audio Device: NVIDIA High Definition Audio
+
+## Customizing the Code
+
+*   **Device Filtering**: Modify the script to filter devices by specific properties (e.g., device type, manufacturer).
+*   **Logging**: Extend the script to log the output to a file for later review.
+*   **Device Status Monitoring**: Add functionality to detect when a device is connected or disconnected in real-time.
+
+## Known Limitations
+
+*   **OS Dependency**: This script only works on Windows systems due to its reliance on the WMI library.
+*   **Output Details**: The script currently displays only the device names. Additional details (e.g., device status or manufacturer) can be extracted but are not included by default.
+
+## Future Improvements
+
+1.  **Real-Time Monitoring**: Implement a feature to detect and log device connection/disconnection events.
+2.  **Enhanced Device Details**: Add functionality to display additional device information like manufacturer, status, and driver version.
+3.  **Cross-Platform Support**: Explore libraries like pyudev for extending functionality to Linux.
+4.  **GUI Integration**: Develop a user-friendly GUI for monitoring and managing connected devices.
+
 # 7)Active Window Input Tracker
 
 ## Overview
@@ -483,182 +743,6 @@ Current Input in 'Terminal': python example.py
 *   Implement cross-platform compatibility for window detection.
 *   Save input logs to a file for later review.
 *   Create a GUI to display inputs for each window dynamically.
-
-# 8)Microphone and Camera Control and Monitoring Tool
-
-## Overview
-
-The Microphone and Camera Control and Monitoring Tool is designed to provide users with robust system-level control over their microphone and camera functionalities while offering real-time monitoring capabilities. Aimed at privacy-conscious individuals, developers, and IT administrators, this tool addresses the need for easy management of audio and video devices to mitigate unauthorized access risks. With an intuitive GUI and efficient backend processing, the tool empowers users to seamlessly manage device access and monitor applications utilizing the microphone.
-
-## Features
-
-*   **Microphone Control**: This feature leverages PowerShell scripts to modify registry keys that determine system-level microphone access. By directly updating the registry values for CapabilityAccessManager and applying related policies, users can ensure that unauthorized access is blocked or allowed based on their preference. This is crucial for safeguarding sensitive conversations from potential eavesdropping.  
-    
-*   **Camera Control**: Similar to the microphone control, this feature uses PowerShell scripts to adjust the registry settings for camera access. By toggling the registry values under the ConsentStore key, users can effectively enable or disable their camera, preventing malicious software or unauthorized apps from activating the camera without consent.  
-    
-*   **Combined Control**: This option combines the microphone and camera control scripts to allow users to toggle access for both devices simultaneously. It provides a convenient one-click solution for locking down audio and video inputs during sensitive tasks or meetings.  
-    
-*   **Real-time Monitoring**: Utilizing the pycaw library, this feature scans the audio sessions managed by the Windows Audio Service to identify active microphone usage. The psutil library is used to fetch detailed process information for each detected session, allowing users to pinpoint which applications are currently accessing the microphone. This feature is critical for real-time privacy assurance and intrusion detection.  
-    
-*   **Reset to Defaults**: This functionality restores the microphone and camera settings to their original states by removing custom registry keys and policies applied by the tool. It ensures that users can revert changes effortlessly without requiring manual intervention in the system settings.  
-    
-*   **User-Friendly GUI**: Built with Tkinter, the GUI presents users with a visually clear and straightforward interface. Buttons are color-coded to indicate actions (e.g., red for disabling, green for enabling), and a status label provides real-time feedback on operations.  
-    
-*   **Dynamic Updates**: The monitoring feature dynamically updates every 5 seconds to ensure users have the latest information about microphone usage. This ensures that any unauthorized access is detected promptly, enhancing the overall reliability and effectiveness of the tool.  
-    
-*   **Microphone Control**: Enable or disable system-level access to the microphone.  
-    
-*   **Camera Control**: Enable or disable system-level access to the camera.  
-    
-*   **Combined Control**: Simultaneously enable or disable both microphone and camera.  
-    
-*   **Real-time Monitoring**: Detect and display applications currently accessing the microphone.  
-    
-*   **Reset to Defaults**: Restore microphone and camera settings to their default state.  
-    
-*   **User-Friendly GUI**: A simple graphical interface for ease of use.  
-    
-*   **Dynamic Updates**: Refresh microphone usage data every 5 seconds.  
-    
-
-## Requirements
-
-1.  **Python Version**: Python 3.8 or later.
-2.  **Libraries**:
-    *   tkinter (for GUI development)
-    *   ctypes (for requesting admin privileges)
-    *   subprocess (for running PowerShell commands)
-    *   psutil (for process monitoring)
-    *   pycaw (for audio session management)
-3.  **Operating System**: Windows 10 or later.
-4.  **Privileges**: Admin privileges are required for modifying system settings.
-
-## Installation
-
-1.  Ensure Python 3.8+ is installed on your system. You can verify the installed version by running the following command in your terminal or command prompt:
-
-python --version
-
-Install the required libraries using pip:  
-pip install psutil pycaw
-
-1.  Save the script to a file, e.g., mic\_cam\_control.py.
-
-## How It Works
-
-This tool was developed to address the increasing concerns surrounding unauthorized access to audio and video devices in modern computing environments. By providing a comprehensive suite of features, the tool empowers users to regain control over their privacy and ensures transparency in device usage.
-
-From a technical perspective, the tool leverages registry modifications through PowerShell to enforce system-level restrictions on microphone and camera access. This ensures that the changes are robust and not easily overridden by standard application-level permissions. Real-time monitoring further enhances the tool's utility by identifying and displaying active microphone usage, making it an essential solution for detecting potential intrusions.
-
-The primary motivation behind this development is to create a proactive defense mechanism for individuals and organizations against malicious software or unauthorized applications that exploit microphone and camera capabilities. With increasing reliance on video conferencing and virtual communication, ensuring the security of audio and video input devices has become paramount. This tool not only simplifies managing these aspects but also fosters awareness about potential vulnerabilities in digital systems.
-
-1.  The script starts by checking for admin privileges using the ctypes library.
-2.  It uses PowerShell commands executed via the subprocess library to modify Windows registry settings for microphone and camera access.
-3.  The real-time monitoring feature uses the pycaw library to detect active audio sessions and psutil to fetch process details.
-4.  A Tkinter GUI provides buttons for interacting with these features, and a status label displays the results of user actions.
-
-## Output
-
-The Graphical User Interface (GUI) for the Microphone and Camera Control and Monitoring Tool is designed for maximum usability and clarity. Built using the Tkinter library, the GUI integrates intuitive design principles to ensure that users of all technical levels can easily interact with the tool. Below are detailed aspects of the GUI layout and functionality:
-
-### GUI Layout
-
-1.  **Main Window**:  
-    *   The main window is cleanly divided into distinct sections for microphone controls, camera controls, combined actions, and monitoring. Each section is visually separated with labels to enhance user navigation.
-    *   Buttons are color-coded (green for enabling actions, red for disabling actions) to provide visual cues.
-2.  **Control Buttons**:  
-    *   Each button corresponds to a specific action, such as enabling or disabling the microphone and camera, or resetting all settings to their default state.
-    *   The button text is concise, clearly indicating its functionality (e.g., "Enable Microphone").
-3.  **Status Label**:  
-    *   Located at the bottom of the window, the status label dynamically updates with feedback messages based on user interactions. Messages include "Microphone Disabled Successfully" or "Monitoring Active," ensuring the user is always informed of the system’s state.
-4.  **Real-time Monitoring Panel**:  
-    *   A dedicated section of the GUI displays a scrolling list of applications currently using the microphone. This panel refreshes every 5 seconds, ensuring the user receives up-to-date information.
-5.  **Reset Defaults Button**:  
-    *   A prominently placed button allows users to quickly revert all settings to their original states, offering a safety net for users who might inadvertently modify settings.
-
-### Usability Features
-
-*   **Admin Privileges Check**: Before launching the main GUI, the script verifies admin rights. If not detected, a pop-up alerts the user, ensuring critical features requiring elevated permissions are accessible.
-*   **Error Handling**: If an operation fails (e.g., due to a service issue), the GUI displays a clear error message in the status label.
-*   **Responsive Design**: The Tkinter framework ensures the GUI adapts to different screen resolutions, maintaining usability across devices.
-
-### User Interaction Workflow
-
-1.  Upon launching the application, the GUI presents all control options in an organized format.
-2.  Users can click the relevant button (e.g., "Disable Camera") to perform the desired action. A status message confirms the success or failure of the operation.
-3.  The monitoring panel automatically updates every 5 seconds, showing any active microphone usage. Users can use this information to identify unauthorized access.
-4.  If users wish to reset changes, the "Reset Defaults" button provides an instant revert option, ensuring easy recovery.
-
-### Technical Benefits of the GUI
-
-*   **Streamlined Accessibility**: The GUI removes the need for manual PowerShell commands, providing non-technical users access to advanced system controls.
-*   **Dynamic Feedback Loop**: Real-time updates and status messages ensure that users are always aware of the system state, reducing confusion.
-*   **Integrated Monitoring**: The combination of control buttons and monitoring data in a single interface offers comprehensive device management from one location.
-
-This GUI has been thoughtfully designed to combine functionality, clarity, and ease of use, making it a robust tool for managing and monitoring microphone and camera access.
-
-*   **Control Actions**: A status message indicating success or failure for each operation.
-*   **Real-time Monitoring**: A list of applications actively using the microphone, refreshed every 5 seconds.
-
-## Notes
-
-*   Changes to microphone and camera access persist until manually reverted or reset using the tool.
-*   Some operations may require restarting services like Audiosrv to apply changes.
-
-## Setup
-
-1.  Open a terminal or command prompt with admin privileges.
-2.  Navigate to the directory containing the script.
-3.  Ensure all dependencies are installed as per the **Requirements** section.
-
-## How to Run
-
-Launch the script with admin privileges:  
-python mic\_cam\_control.py
-
-1.  Interact with the GUI to control microphone and camera settings or monitor usage.
-
-## Implementation Details
-
-The application combines Python libraries and PowerShell commands for effective system control:
-
-*   **PowerShell Integration**: Used for registry modifications to enable or disable microphone and camera.
-*   **Pycaw Integration**: Fetches active audio sessions to identify applications accessing the microphone.
-*   **Tkinter GUI**: Provides an intuitive interface for users to interact with the tool.
-
-## Functions
-
-1.  **is\_admin()**: Checks if the script is running with admin privileges.
-2.  **run\_powershell\_script(script)**: Executes a PowerShell script and captures the output.
-3.  **disable\_microphone\_access()**: Disables microphone access via registry changes.
-4.  **enable\_microphone\_access()**: Enables microphone access via registry changes.
-5.  **disable\_camera\_access()**: Disables camera access via registry changes.
-6.  **enable\_camera\_access()**: Enables camera access via registry changes.
-7.  **disable\_both()**: Disables both microphone and camera access.
-8.  **enable\_both()**: Enables both microphone and camera access.
-9.  **reset\_defaults()**: Restores microphone and camera settings to their defaults.
-10.  **get\_mic\_usage()**: Detects applications currently using the microphone.
-11.  **update\_status(action, result)**: Updates the status label in the GUI.
-
-## Troubleshooting
-
-1.  **Admin Privileges Required**: Ensure the script is run with admin rights.
-2.  **Missing Dependencies**: Install required libraries using pip.
-3.  **Registry Access Denied**: Verify that the current user account has sufficient permissions.
-4.  **Monitoring Issues**: Ensure pycaw and psutil are correctly installed.
-5.  **Service Restart Issues**: Restart the Windows Audio service manually if necessary.
-
-## Acknowledgments
-
-*   **Pycaw Library**: For audio session management.
-*   **Psutil Library**: For process monitoring.
-*   **Tkinter**: For GUI development.
-*   **Microsoft PowerShell**: For enabling registry-based system control.
-
-## Execution Time
-
-*   **Control Actions**: Instantaneous (less than 1 second per operation).
-*   **Monitoring Refresh Interval**: 5 seconds.
 
 # Conclusion
 
