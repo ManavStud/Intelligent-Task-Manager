@@ -146,9 +146,13 @@ python process\_chain\_tracker.py
 When a process is detected and its tree is tracked, the output might look like this:
 
 Process 'Code.exe' (PID: 1234) detected. Tracking its chain.
+
 Process Tree:
+
 Process 'Code.exe' (PID: 1234)
+
    Process 'ChildProcess1.exe' (PID: 5678)
+   
       Process 'GrandChildProcess.exe' (PID: 91011)
 
 ## Notes
