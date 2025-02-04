@@ -1,0 +1,9 @@
+psutil>=5.8.0
+logging 
+csv
+signal
+datetime
+platform
+ctypes 
+json
+os
