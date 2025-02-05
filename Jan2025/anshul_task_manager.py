@@ -5,6 +5,65 @@ import os
 import subprocess
 import threading
 import time
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
+
+# ==============================================
+# 1) Setup Logging with NDJSON Schema
+# ==============================================
+def setup_logging():
+    """
+    Set up logging configuration so that it follows the NDJSON schema:
+    Each line is one JSON object containing:
+    {
+      "timestamp": "%(asctime)s",
+      "level": "%(levelname)s",
+      "script": "%(name)s",
+      "module": "%(module)s",
+      "funcName": "%(funcName)s",
+      "lineNo": "%(lineno)d",
+      "message": "%(message)s"
+    }
+    """
+    # Create a logger for this module
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)  # Capture all levels of logs
+
+    # Ensure a logs directory (or adjust path as needed)
+    LOG_DIR = "logs"
+    os.makedirs(LOG_DIR, exist_ok=True)
+    LOG_FILENAME = os.path.join(LOG_DIR, "intelligent_task_manager.ndjson")
+
+    # Define the JSON schema format
+    json_format = (
+        '{"timestamp": "%(asctime)s", '
+        '"level": "%(levelname)s", '
+        '"script": "%(name)s", '
+        '"module": "%(module)s", '
+        '"funcName": "%(funcName)s", '
+        '"lineNo": "%(lineno)d", '
+        '"message": "%(message)s"}'
+    )
+
+    formatter = logging.Formatter(fmt=json_format, datefmt='%Y-%m-%d %H:%M:%S')
+
+    # Console handler
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.INFO)  # Show INFO and above in console
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    # Rotating NDJSON file handler
+    fh = RotatingFileHandler(LOG_FILENAME, maxBytes=5 * 1024 * 1024, backupCount=5)
+    fh.setLevel(logging.DEBUG)  # Log all levels to file
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
+    return logger
+
+# Initialize the logger (module-level)
+logger = setup_logging()
 
 class IntelligentTaskManager(tk.Tk):
     def __init__(self):
@@ -48,6 +107,8 @@ class IntelligentTaskManager(tk.Tk):
         # Now apply the dark teal/blue color scheme
         self.set_styles()
 
+        logger.info("Intelligent Task Manager initialized.")
+
     def task_manager_tab(self):
         task_frame = ttk.Frame(self.notebook, padding=10)
         self.notebook.add(task_frame, text="Task Manager")
@@ -84,10 +145,6 @@ class IntelligentTaskManager(tk.Tk):
             self.tree.column(col, width=width)
             self.sort_states[col] = None
 
-        # Remove default gray tag so processes use the default Treeview background
-        # Instead, we only configure tags for special states
-        # self.tree.tag_configure('gray', background='lightgray')
-
         self.tree.tag_configure('green', background='lightgreen')
         self.tree.tag_configure('red', background='lightcoral')
         self.tree.tag_configure('yellow', background='lightyellow')
@@ -113,17 +170,17 @@ class IntelligentTaskManager(tk.Tk):
     def sort_column(self, col):
         data = [(self.tree.item(child)['values'], child) for child in self.tree.get_children()]
 
-        # Decide the sort direction
         if self.sort_states[col] is None or self.sort_states[col] == 'default':
-            # Sort ascending
             data.sort(key=lambda x: x[0][self.tree.cget('columns').index(col)])
             self.sort_states[col] = 'ascending'
+            logger.debug(f"Sorting column '{col}' ascending.")
         elif self.sort_states[col] == 'ascending':
-            # Sort descending
             data.sort(key=lambda x: x[0][self.tree.cget('columns').index(col)], reverse=True)
             self.sort_states[col] = 'descending'
+            logger.debug(f"Sorting column '{col}' descending.")
         else:
             # Return to default -> refresh entire list
+            logger.debug(f"Returning column '{col}' to default (unsorted) state.")
             self.refresh_tasks()
             self.sort_states[col] = 'default'
             return
@@ -135,6 +192,8 @@ class IntelligentTaskManager(tk.Tk):
         # Clear tree
         for item in self.tree.get_children():
             self.tree.delete(item)
+
+        logger.info("Refreshing process list...")
 
         # Re-populate
         for proc in psutil.process_iter(['pid', 'name', 'exe', 'username', 'cwd', 'cmdline', 'cpu_percent', 'memory_percent']):
@@ -154,9 +213,7 @@ class IntelligentTaskManager(tk.Tk):
                 signed_status = self.is_signed(exe_path) if exe_path != "N/A" else "N/A"
                 publisher = self.get_publisher(exe_path) if exe_path != "N/A" else "N/A"
 
-                # Default tag = '' so it uses the normal background
                 tag = ''
-                # Then colorize only if conditions match
                 if self.is_malleable_process(name):
                     tag = 'yellow'
                 elif signed_status == "Yes":
@@ -172,8 +229,11 @@ class IntelligentTaskManager(tk.Tk):
                     tags=(tag,)
                 )
 
-            except (psutil.AccessDenied, psutil.NoSuchProcess):
+            except (psutil.AccessDenied, psutil.NoSuchProcess) as e:
+                logger.debug(f"Skipping process due to access error: {e}")
                 continue
+
+        logger.info("Process list refresh complete.")
 
     def get_process_path(self, pid):
         try:
@@ -190,10 +250,10 @@ class IntelligentTaskManager(tk.Tk):
                     return line.split(':', 1)[1].strip() or "Unknown"
             return "Unknown"
         except FileNotFoundError:
-            print("Error: 'sigcheck' not found. Ensure it's installed and in your PATH.")
+            logger.warning("sigcheck not found in PATH.")
             return "Error"
         except Exception as e:
-            print(f"Error retrieving publisher for {file_path}: {e}")
+            logger.error(f"Error retrieving publisher for {file_path}: {e}")
             return "Error"
 
     def is_signed(self, file_path):
@@ -206,10 +266,10 @@ class IntelligentTaskManager(tk.Tk):
             else:
                 return "Unknown"
         except FileNotFoundError:
-            print("Error: 'sigcheck' not found. Ensure it's installed and in your PATH.")
+            logger.warning("sigcheck not found in PATH.")
             return "Error"
         except Exception as e:
-            print(f"Error checking signature for {file_path}: {e}")
+            logger.error(f"Error checking signature for {file_path}: {e}")
             return "Error"
 
     def is_malleable_process(self, process_name):
@@ -221,15 +281,19 @@ class IntelligentTaskManager(tk.Tk):
         return process_name.lower() in malleable_processes
 
     def kill_process(self):
-        pid = self.pid_entry.get()
-        if pid.isdigit():
+        pid_str = self.pid_entry.get()
+        if pid_str.isdigit():
+            pid = int(pid_str)
             try:
-                os.kill(int(pid), 9)
+                os.kill(pid, 9)
+                logger.info(f"Killed process with PID {pid}.")
                 messagebox.showinfo("Success", f"Process with PID {pid} terminated.")
                 self.refresh_tasks()
             except Exception as e:
+                logger.error(f"Failed to terminate process PID {pid}: {e}")
                 messagebox.showerror("Error", f"Failed to terminate process: {e}")
         else:
+            logger.warning("Invalid PID input for kill process.")
             messagebox.showwarning("Warning", "Please enter a valid PID.")
 
     def resource_monitor_tab(self):
@@ -261,9 +325,13 @@ class IntelligentTaskManager(tk.Tk):
 
     def update_resources(self):
         while True:
-            self.update_green_bar("cpu", psutil.cpu_percent())
-            self.update_green_bar("memory", psutil.virtual_memory().percent)
-            self.update_green_bar("disk", psutil.disk_usage('/').percent)
+            cpu_usage = psutil.cpu_percent()
+            mem_usage = psutil.virtual_memory().percent
+            disk_usage = psutil.disk_usage('/').percent
+
+            self.update_green_bar("cpu", cpu_usage)
+            self.update_green_bar("memory", mem_usage)
+            self.update_green_bar("disk", disk_usage)
             time.sleep(1)
 
     def update_green_bar(self, resource_type, usage):
@@ -298,6 +366,7 @@ class IntelligentTaskManager(tk.Tk):
 
     def toggle_feature(self, feature_name, var):
         status = "enabled" if var.get() else "disabled"
+        logger.info(f"Toggle feature: {feature_name} is now {status}")
         messagebox.showinfo(f"{feature_name.capitalize()}", f"{feature_name.capitalize()} {status}.")
 
     # ---------------------------------------------------------------------
@@ -309,12 +378,9 @@ class IntelligentTaskManager(tk.Tk):
         including frames, labels, buttons, entries, and treeviews.
         """
 
-        # Define color constants
         DARK_BLUE = "#04091E"          # Dark Blue
         TEAL_BLUE = "#027B8C"          # Muted Teal Blue
         CYAN_BLUE = "#008FBF"          # Muted Cyan Blue
-        DARK_GREEN = "#228B22"         # Dark Green
-        DARK_RED = "#B22222"           # Dark Red
         LIGHT_GRAY = "#D9E2EC"         # White/Light Gray
         ENTRY_BG = "#1C2B36"           # Slightly lighter than DARK_BLUE for contrast
         FRAME_BG = "#022B3A"           # Slightly different shade for frames
@@ -324,30 +390,21 @@ class IntelligentTaskManager(tk.Tk):
         TREEVIEW_HEADER_BG = TEAL_BLUE
         TREEVIEW_HEADER_FG = LIGHT_GRAY
 
-        # Create or retrieve the current ttk Style
         style = ttk.Style(self)
         style.theme_use("clam")
 
-        # Main window background
         self.configure(bg=DARK_BLUE)
-
-        # Title label
         self.title_label.configure(bg=TEAL_BLUE, fg=LIGHT_GRAY)
 
-        # Notebook
         style.configure("TNotebook", background=FRAME_BG, borderwidth=0)
         style.configure("TNotebook.Tab", background=FRAME_BG, foreground=LIGHT_GRAY)
         style.map("TNotebook.Tab",
                   background=[("selected", TEAL_BLUE)],
                   foreground=[("selected", LIGHT_GRAY)])
 
-        # Frames
         style.configure("TFrame", background=FRAME_BG)
-
-        # Labels
         style.configure("TLabel", background=FRAME_BG, foreground=LIGHT_GRAY)
 
-        # Buttons
         style.configure("TButton",
                         background=TEAL_BLUE,
                         foreground=LIGHT_GRAY,
@@ -356,16 +413,13 @@ class IntelligentTaskManager(tk.Tk):
                         focuscolor="none")
         style.map("TButton",
                   background=[("active", BUTTON_ACTIVE_BG), ("pressed", BUTTON_ACTIVE_BG)],
-                  foreground=[("active", LIGHT_GRAY), ("pressed", LIGHT_GRAY)]
-                 )
+                  foreground=[("active", LIGHT_GRAY), ("pressed", LIGHT_GRAY)])
 
-        # Entry
         style.configure("TEntry",
                         fieldbackground=ENTRY_BG,
                         foreground=LIGHT_GRAY,
                         bordercolor=TEAL_BLUE)
 
-        # Treeview
         style.configure("Treeview",
                         background=TREEVIEW_BG,
                         foreground=TREEVIEW_TEXT,
@@ -379,13 +433,14 @@ class IntelligentTaskManager(tk.Tk):
                         font=("Helvetica", 12, "bold"))
         style.map("Treeview.Heading",
                   background=[("active", CYAN_BLUE), ("pressed", CYAN_BLUE)],
-                  foreground=[("active", LIGHT_GRAY), ("pressed", LIGHT_GRAY)]
-                 )
+                  foreground=[("active", LIGHT_GRAY), ("pressed", LIGHT_GRAY)])
         style.map("Treeview",
                   background=[("selected", CYAN_BLUE)],
                   foreground=[("selected", LIGHT_GRAY)])
 
 
 if __name__ == "__main__":
+    logger.info("Launching Intelligent Task Manager application.")
     app = IntelligentTaskManager()
     app.mainloop()
+    logger.info("Application closed.")
