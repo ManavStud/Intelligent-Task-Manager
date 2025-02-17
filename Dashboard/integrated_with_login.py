@@ -6,6 +6,10 @@ import os
 import random
 import sqlite3
 from datetime import datetime
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 @dataclass
 class User:
@@ -14,8 +18,58 @@ class User:
     is_authenticated: bool = False
 
 def send_email_otp(email: str, otp: str):
-    """Simulated email-sending; replace with real email logic."""
-    print(f"Sending OTP {otp} to {email}")
+    """
+    Sends an OTP email using a real SMTP server (Gmail SSL on port 465).
+    Update SMTP credentials and settings as needed.
+    """
+
+    sender_email = "madhvptel1702@gmail.com"
+    sender_password = "miqp mqzc eduk lotk"  # Must be a valid Gmail App Password
+
+    # Create the email headers
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Your OTP Code"
+    message["From"] = sender_email
+    message["To"] = email
+
+    # Plain-text version
+    text = f"""\
+Hello,
+Your One-Time Password (OTP) is: {otp}
+
+If you did not request this code, please ignore this email.
+"""
+    # HTML version
+    html = f"""\
+<html>
+  <body>
+    <p>Hello,<br><br>
+       Your One-Time Password (OTP) is: <strong>{otp}</strong><br><br>
+       If you did not request this code, please ignore this email.
+    </p>
+  </body>
+</html>
+"""
+
+    # Attach both parts
+    part1 = MIMEText(text, "plain")
+    part2 = MIMEText(html, "html")
+    message.attach(part1)
+    message.attach(part2)
+
+    # Create a secure SSL context
+    context = ssl.create_default_context()
+
+    try:
+        # SSL on port 465
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, email, message.as_string())
+
+        print(f"OTP {otp} sent to {email} successfully.")
+
+    except Exception as ex:
+        print("Error sending OTP email:", ex)
 
 class DBManager:
     """
@@ -241,9 +295,11 @@ class IntegratedApp:
 
     def db_registration_submit(self):
         """Handle user registration with OTP verification using DB."""
+        
         name = self.signup_name.value.strip()
         email = self.signup_email.value.strip()
         password = self.signup_password.value.strip()
+        print("db_registration_submit called with:", name, email, password)
 
         if not name or not email or not password:
             self.show_message("All fields are required for registration.")
@@ -256,6 +312,7 @@ class IntegratedApp:
 
         otp = str(random.randint(100000, 999999))
         # Create the user in DB
+        print("Generated OTP:", otp)
         self.db.create_user(name, email, password, otp)
 
         # Simulate sending OTP
@@ -272,18 +329,26 @@ class IntegratedApp:
         """Handle OTP verification submission using DB."""
         entered_otp = self.otp_field.value.strip()
         user = self.db.find_user_by_email(self.current_reg_email) if self.current_reg_email else None
+
         if user is None:
             self.show_message("User not found.")
         else:
             if entered_otp == user["otp"]:
                 self.db.update_user_verification(user_id=user["id"], verified=True, new_otp=None)
-                self.show_message("Email verified successfully!")
+                
+                # Hide the OTP overlay now that the user is verified
                 if self.otp_overlay:
                     self.otp_overlay.visible = False
+                
+                # Show a success message
+                self.show_message("Registration successful! Redirecting to login page...")
+
+                # Immediately redirect to the login page
+                self.show_login()
             else:
                 self.show_message("Invalid OTP. Please try again.")
+        
         self.page.update()
-
     # ----------------- UI-Level Auth Handling ----------------- #
     def handle_login_submit(self, email: str, password: str, on_error: Callable):
         """Handle login form submission using DB."""
@@ -448,7 +513,7 @@ class IntegratedApp:
 
             import re
             email_valid = re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None
-            password_valid = len(password) == 8 and password.isalnum()
+            password_valid = len(password) >=8 and password.isalnum()
             password_match = password == confirm_password
 
             # Update error messages based on validations
