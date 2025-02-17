@@ -159,6 +159,32 @@ class IntegratedApp:
 
         # Initialize dashboard components
         self.initialize_dashboard_components()
+    def create_gmail_button(self):
+        """Creates Gmail sign-in button"""
+        return ft.IconButton(
+            icon=ft.icons.MAIL,
+            icon_color="white",
+            icon_size=20,
+            style=ft.ButtonStyle(
+                shape=ft.CircleBorder(),
+                side=ft.BorderSide(1, "rgba(255,255,255,0.2)"),
+            ),
+        )
+    def show_login(self):
+        """Display login view"""
+        login_view = ft.View(
+            route="/login",
+            controls=[self.create_login_ui()],
+            bgcolor=self.dark_bg,
+            padding=0
+        )
+        self.page.views.clear()
+        self.page.window_width = self.login_width
+        self.page.window_height = self.login_height
+        self.page.window_min_width = self.min_width
+        self.page.window_min_height = self.min_height
+        self.page.views.append(login_view)
+        self.page.update()
 
     def initialize_dashboard_components(self):
         """Initialize all dashboard-related components and state"""
@@ -393,14 +419,15 @@ class IntegratedApp:
             animate_position=ft.animation.Animation(500, ft.AnimationCurve.EASE_IN_OUT),
         )
 
-        # Sign Up Form
+        # Sign Up Form with Confirm Password and real-time validation
         self.signup_name = self.create_floating_text_field("Name")
         self.signup_email = self.create_floating_text_field("Email")
         self.signup_password = self.create_floating_text_field("Password", password=True)
+        self.signup_confirm_password = self.create_floating_text_field("Confirm Password", password=True)
 
-        # Button for Sign Up
-        sign_up_button = ft.ElevatedButton(
-            text="SIGN UP",
+        # "Get OTP" button, initially disabled until validations pass.
+        self.get_otp_button = ft.ElevatedButton(
+            text="Get OTP",
             style=ft.ButtonStyle(
                 bgcolor={"": "rgba(44, 44, 44, 0.7)"},
                 shape=ft.RoundedRectangleBorder(radius=20),
@@ -408,8 +435,40 @@ class IntegratedApp:
             color="white",
             height=40,
             width=160,
+            disabled=True,
             on_click=lambda e: self.db_registration_submit(),
         )
+
+        # Real-time validation for sign-up fields
+        def check_signup_fields(e):
+            name = self.signup_name.value.strip()
+            email = self.signup_email.value.strip()
+            password = self.signup_password.value.strip()
+            confirm_password = self.signup_confirm_password.value.strip()
+
+            import re
+            email_valid = re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None
+            password_valid = len(password) == 8 and password.isalnum()
+            password_match = password == confirm_password
+
+            # Update error messages based on validations
+            self.signup_email.error_text = "Invalid email format" if email and not email_valid else None
+            self.signup_password.error_text = "Password must be 8 alphanumeric characters" if password and not password_valid else None
+            self.signup_confirm_password.error_text = "Passwords do not match" if confirm_password and not password_match else None
+
+            # Enable Get OTP button only if all fields are non-empty and valid
+            if name and email and password and confirm_password and email_valid and password_valid and password_match:
+                self.get_otp_button.disabled = False
+            else:
+                self.get_otp_button.disabled = True
+
+            self.page.update()
+
+        # Attach on_change events to trigger real-time validation
+        self.signup_name.on_change = check_signup_fields
+        self.signup_email.on_change = check_signup_fields
+        self.signup_password.on_change = check_signup_fields
+        self.signup_confirm_password.on_change = check_signup_fields
 
         signup_form = ft.Container(
             content=ft.Column(
@@ -420,13 +479,14 @@ class IntegratedApp:
                     self.signup_name,
                     self.signup_email,
                     self.signup_password,
-                    sign_up_button,
+                    self.signup_confirm_password,
+                    self.get_otp_button,
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=15,
             ),
             width=320,
-            height=450,
+            height=500,  # Increased height for the additional field
             bgcolor=self.glass_color,
             border_radius=10,
             border=ft.border.all(1, "rgba(255, 255, 255, 0.2)"),
@@ -468,28 +528,7 @@ class IntegratedApp:
         )
 
         # --- OTP Verification Overlay (initially hidden) ---
-        self.otp_field = ft.TextField(label="Enter OTP", width=280)
-        otp_verify_button = ft.ElevatedButton("Verify OTP", on_click=self.db_verify_otp_submit)
-        self.otp_overlay = ft.Container(
-            content=ft.Column(
-                controls=[
-                    ft.Text("OTP Verification", size=24, weight=ft.FontWeight.BOLD, color="white"),
-                    self.otp_field,
-                    otp_verify_button,
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                spacing=15,
-            ),
-            width=320,
-            height=200,
-            bgcolor=self.glass_color,
-            border_radius=10,
-            left=160,
-            top=130,
-            visible=False,
-            animate_opacity=ft.animation.Animation(500, ft.AnimationCurve.EASE_IN_OUT),
-        )
+        self.otp_overlay = self.create_otp_overlay()
 
         # Main Container (Stacked UI)
         main_container = ft.Container(
@@ -526,34 +565,107 @@ class IntegratedApp:
             bgcolor=self.dark_bg,
         )
 
-    def create_gmail_button(self):
-        """Creates Gmail sign-in button"""
-        return ft.IconButton(
-            icon=ft.icons.MAIL,
-            icon_color="white",
-            icon_size=20,
-            style=ft.ButtonStyle(
-                shape=ft.CircleBorder(),
-                side=ft.BorderSide(1, "rgba(255,255,255,0.2)"),
+    # ----------------- OTP Overlay and Resend OTP Methods ----------------- #
+    def create_otp_overlay(self):
+        # Create the OTP input field with centered text
+        self.otp_field = ft.TextField(
+            label="Enter OTP",
+            width=280,
+            text_align="center",
+            border=ft.InputBorder.OUTLINE,
+            color="white",
+            bgcolor="rgba(44,44,44,0.3)",
+        )
+
+        # Build the content of the OTP overlay
+        otp_content = ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Text(
+                        "OTP Verification",
+                        size=28,
+                        weight=ft.FontWeight.BOLD,
+                        color="white",
+                        text_align="center"
+                    ),
+                    ft.Text(
+                        "We have sent an OTP to your email.\nPlease enter it below.",
+                        size=14,
+                        color="#cccccc",
+                        text_align="center",
+                    ),
+                    self.otp_field,
+                    ft.Row(
+                        controls=[
+                            ft.ElevatedButton(
+                                text="Verify OTP",
+                                on_click=self.db_verify_otp_submit,
+                                bgcolor=self.dashboard_accent_color,
+                                color="white",
+                                height=40,
+                                width=120,
+                            ),
+                            ft.ElevatedButton(
+                                text="Resend OTP",
+                                on_click=self.resend_otp,
+                                bgcolor="gray",
+                                color="white",
+                                height=40,
+                                width=120,
+                            ),
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        spacing=20,
+                    ),
+                    # Placeholder for a countdown timer (can be updated with timer logic)
+                    ft.Text(
+                        "OTP expires in: 60 seconds",
+                        size=12,
+                        color="white",
+                        text_align="center",
+                        key="otp_timer_text"
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=20,
+            ),
+            width=400,
+            padding=20,
+            bgcolor=self.glass_color,
+            border_radius=15,
+            shadow=ft.BoxShadow(
+                blur_radius=15,
+                spread_radius=5,
+                color=ft.colors.BLACK45,
+                offset=ft.Offset(0, 0)
             ),
         )
 
-    def show_login(self):
-        """Display login view"""
-        login_view = ft.View(
-            route="/login",
-            controls=[self.create_login_ui()],
-            bgcolor=self.dark_bg,
-            padding=0
+        # Create a full-screen modal overlay with a semi-transparent background
+        overlay = ft.Container(
+            content=otp_content,
+            alignment=ft.alignment.center,
+            bgcolor="rgba(0,0,0,0.5)",
+            expand=True,
+            visible=False,
+            animate_opacity=ft.animation.Animation(500, ft.AnimationCurve.EASE_IN_OUT),
         )
-        self.page.views.clear()
-        self.page.window_width = self.login_width
-        self.page.window_height = self.login_height
-        self.page.window_min_width = self.min_width
-        self.page.window_min_height = self.min_height
-        self.page.views.append(login_view)
-        self.page.update()
+        return overlay
 
+    def resend_otp(self, e):
+        """Generate and resend a new OTP to the user's email."""
+        if self.current_reg_email:
+            new_otp = str(random.randint(100000, 999999))
+            user = self.db.find_user_by_email(self.current_reg_email)
+            if user:
+                self.db.update_user_verification(user_id=user["id"], verified=False, new_otp=new_otp)
+                send_email_otp(self.current_reg_email, new_otp)
+                self.show_message("OTP resent to your email.")
+            else:
+                self.show_message("User not found.")
+        else:
+            self.show_message("No registration in progress.")
     # ----------------- Dashboard UI ----------------- #
     def show_dashboard(self):
         """Display dashboard view"""
