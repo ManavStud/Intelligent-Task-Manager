@@ -159,14 +159,7 @@ Troubleshooting
 
 ⸻
 
-Contributing
-	1.	Fork the repository.
-	2.	Create a new branch (e.g., feature/new-function).
-	3.	Commit changes with a clear message.
-	4.	Push to your fork.
-	5.	Open a Pull Request describing your changes.
 
-⸻
 
 License
 
