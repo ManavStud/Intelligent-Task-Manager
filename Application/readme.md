@@ -14,8 +14,7 @@ Table of Contents
 	•	License
 
 ⸻
-
-##  Features
+Features
 	1.	Process Monitoring
 	•	Real-time CPU, Memory usage, status, and security checks.
 	•	Critical alerts for high usage or terminated processes.
