@@ -1,12 +1,23 @@
 import flet as ft
 import os
+import sys
 from flet import Icons, BlurTileMode, Colors, BoxShadow, ShadowBlurStyle, Offset, Blur, Stack, ImageFit, ImageRepeat
 from proc_chain import create_process_chains_layout, start_proc_chain_updates
 from network_monitor import create_network_monitoring_layout
 from proc_mon import create_process_monitoring_layout
 from Scheduled_processes import create_system_distribution_layout, start_realtime_updates
 from logs_analytics import create_logs_analytics_layout
-from device_manager import DeviceManagerUI  # Import the external DeviceManagerUI module
+from device_manager import DeviceManagerUI
+
+# Path helper function for PyInstaller
+def get_resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class DesktopApp:
     def __init__(self):
@@ -23,8 +34,6 @@ class DesktopApp:
         self.sidebar_expanded = False
         self.sidebar_width = 50
         self.sidebar_expanded_width = 150
-
-        # Remove Device Manager specific state (now handled externally)
         
         # Glass effect properties
         self.glass_bgcolor = "#20f4f4f4"
@@ -37,13 +46,12 @@ class DesktopApp:
             blur_style=ShadowBlurStyle.OUTER
         )
         
-        # Path setup
-        self.base_path = r"/Users/madhavpatel/Downloads/assets"
+        # Path setup - use get_resource_path for PyInstaller compatibility
+        self.base_path = get_resource_path("assets")
         self.bg_image_path = os.path.join(self.base_path, "Background.png")
         
         self.svg_icons = {
             "process_monitor": os.path.join(self.base_path, "Process.svg"),
-            #"system_commands": os.path.join(self.base_path, "system_commands.svg"),
             "network": os.path.join(self.base_path, "Network.svg"),
             "scheduled": os.path.join(self.base_path, "scheduled.svg"),
             "process_chains": os.path.join(self.base_path, "Chaining.svg"),
@@ -53,72 +61,91 @@ class DesktopApp:
 
     def get_tab_content(self):
         """Return the appropriate content based on the selected tab"""
-        if self.selected_tab_index == 1:  # Network Connections tab
-            layout, init_network = create_network_monitoring_layout(
-                glass_bgcolor=self.glass_bgcolor,
-                container_blur=self.container_blur,
-                container_shadow=self.container_shadow
-            )
-            init_network(self.page)
-            return layout
-        elif self.selected_tab_index == 4:  # Device Manager tab
-            # Use DeviceManagerUI from the external module
-            device_manager_ui = DeviceManagerUI(
-                base_path=self.base_path,
-                glass_bgcolor=self.glass_bgcolor,
-                container_blur=self.container_blur,
-                container_shadow=self.container_shadow,
-                accent_color=self.accent_color
-            )
-            return device_manager_ui.build()
-        elif self.selected_tab_index == 3:  # Process Chains tab
-            layout, dashboard = create_process_chains_layout(
-                glass_bgcolor=self.glass_bgcolor,
-                container_blur=self.container_blur,
-                container_shadow=self.container_shadow
-            )
-            start_proc_chain_updates(self.page, dashboard)
-            return layout
-        elif self.selected_tab_index == 0:  # Process Monitor tab
-            layout, init_proc = create_process_monitoring_layout(
-                glass_bgcolor=self.glass_bgcolor,
-                container_blur=self.container_blur,
-                container_shadow=self.container_shadow
-            )
-            init_proc(self.page)
-            return layout
-        elif self.selected_tab_index == 2:  # Scheduled Processes tab
-            layout, dashboard = create_system_distribution_layout(
-                glass_bgcolor=self.glass_bgcolor,
-                container_blur=self.container_blur,
-                container_shadow=self.container_shadow
-            )
-            start_realtime_updates(self.page, dashboard)
-            return layout  
-        elif self.selected_tab_index == 5:  # System Logs tab
-            layout, init_logs = create_logs_analytics_layout(
-                base_path=self.base_path,
-                glass_bgcolor=self.glass_bgcolor,
-                container_blur=self.container_blur,
-                container_shadow=self.container_shadow,
-                accent_color=self.accent_color,
-                background_color=self.dark_bg,  # e.g. "#0B0F19"
-                card_color=self.dark_card,      # e.g. "#112240"
-                text_color="#FFFFFF"           # All text is white
-            )
+        try:
+            if self.selected_tab_index == 1:  # Network Connections tab
+                layout, init_network = create_network_monitoring_layout(
+                    glass_bgcolor=self.glass_bgcolor,
+                    container_blur=self.container_blur,
+                    container_shadow=self.container_shadow
+                )
+                init_network(self.page)
+                return layout
+                
+            elif self.selected_tab_index == 4:  # Device Manager tab
+                # Use DeviceManagerUI from the external module
+                device_manager_ui = DeviceManagerUI(
+                    base_path=self.base_path,
+                    glass_bgcolor=self.glass_bgcolor,
+                    container_blur=self.container_blur,
+                    container_shadow=self.container_shadow,
+                    accent_color=self.accent_color,
+                    background_color=self.dark_bg,
+                    text_color=self.text_color
+                )
+                return device_manager_ui.build()  # Return the container directly
 
-            # Add layout to your page or container
-            init_logs(self.page)
-
-            # Then call init function after it's added
-            return(layout)
-        else:
+            elif self.selected_tab_index == 3:  # Process Chains tab
+                layout, dashboard = create_process_chains_layout(
+                    glass_bgcolor=self.glass_bgcolor,
+                    container_blur=self.container_blur,
+                    container_shadow=self.container_shadow
+                )
+                start_proc_chain_updates(self.page, dashboard)
+                return layout
+                
+            elif self.selected_tab_index == 0:  # Process Monitor tab
+                layout, init_proc = create_process_monitoring_layout(
+                    glass_bgcolor=self.glass_bgcolor,
+                    container_blur=self.container_blur,
+                    container_shadow=self.container_shadow
+                )
+                init_proc(self.page)
+                return layout
+                
+            elif self.selected_tab_index == 2:  # Scheduled Processes tab
+                layout, dashboard = create_system_distribution_layout(
+                    glass_bgcolor=self.glass_bgcolor,
+                    container_blur=self.container_blur,
+                    container_shadow=self.container_shadow
+                )
+                start_realtime_updates(self.page, dashboard)
+                return layout  
+                
+            elif self.selected_tab_index == 5:  # System Logs tab
+                layout, init_logs = create_logs_analytics_layout(
+                    base_path=self.base_path,
+                    glass_bgcolor=self.glass_bgcolor,
+                    container_blur=self.container_blur,
+                    container_shadow=self.container_shadow,
+                    accent_color=self.accent_color,
+                    background_color=self.dark_bg,
+                    card_color=self.dark_card,
+                    text_color="#FFFFFF"
+                )
+                init_logs(self.page)
+                return layout
+                
+            else:
+                return ft.Container(
+                    content=ft.Text("Coming Soon...", size=20, color="white"),
+                    alignment=ft.alignment.center,
+                    expand=True
+                )
+                
+        except Exception as e:
+            print(f"Error in get_tab_content: {e}")
             return ft.Container(
-                content=ft.Text("Coming Soon...", size=20, color="white"),
-                alignment=ft.alignment.center,
-                expand=True
+                expand=True,
+                bgcolor=self.dark_bg,
+                padding=20,
+                content=ft.Column([
+                    ft.Text("Error loading content", size=20, weight=ft.FontWeight.BOLD, color="red"),
+                    ft.Text(str(e), color=self.text_color)
+                ]),
+                alignment=ft.alignment.center
             )
 
+    # Create tab item 
     def create_tab_item(self, icon_path, label, index):
         return ft.Container(
             content=ft.Row([
@@ -200,10 +227,23 @@ class DesktopApp:
                     tab.content.controls[1].content.color = "white"
                 tab.border = None
         
-        # Update main content
-        if hasattr(self, 'main_content_container'):
-            self.main_content_container.content = self.get_tab_content()
+        # Update main content with a loading indicator
+        self.main_content_container.content = ft.Container(
+            content=ft.Column(
+                [ft.ProgressRing(), ft.Text("Loading...", color=self.text_color)],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            alignment=ft.alignment.center,
+            expand=True
+        )
+        e.page.update()
         
+        # Get the new content for the selected tab after showing loading indicator
+        new_content = self.get_tab_content()
+        # Update the container's content
+        self.main_content_container.content = new_content
+        # Make sure to update the page to show the changes
         e.page.update()
 
     def main(self, page: ft.Page):
@@ -218,10 +258,13 @@ class DesktopApp:
         # Create background image container
         background = ft.Container(
             expand=True,
-            image_src=self.bg_image_path,
-            image_fit=ft.ImageFit.COVER,
-            image_repeat=ft.ImageRepeat.NO_REPEAT,
+            content=ft.Image(
+                src=self.bg_image_path,
+                fit=ft.ImageFit.COVER,
+                repeat=ft.ImageRepeat.NO_REPEAT,
+            ),
         )
+
         
         # Initialize tabs
         self.tabs_data = [
@@ -333,7 +376,7 @@ class DesktopApp:
 
         # Create main content container that will be updated with tab changes
         self.main_content_container = ft.Container(
-            content=self.get_tab_content(),
+            content=self.get_tab_content(),  # Get the initial content for the default tab
             expand=True,
         )
 
